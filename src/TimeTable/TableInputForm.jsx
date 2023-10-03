@@ -255,18 +255,19 @@ export default function TableInputForm() {
   const [data, setData] = useState(null);
 
   const [workingDays, setWorkingDays] = useState("");
-  const [subjectPerDay, setSubjectPerDay] = useState("");
+  const [subjectsPerDay, setSubjectsPerDay] = useState("");
   const [totalSubjects, setTotalSubjects] = useState("");
   const [subjectInputs, setSubjectInputs] = useState([]);
   const [subjectData, setSubjectData] = useState([]);
   const [myArray, setMyArray] = useState([]);
+  const [response, setResponse] = useState(null);
 
   const handleWorkingDaysChange = (e) => {
     setWorkingDays(parseInt(e.target.value, 10));
   };
 
   const handleSubjectPerDayChange = (e) => {
-    setSubjectPerDay(parseInt(e.target.value, 10));
+    setSubjectsPerDay(parseInt(e.target.value, 10));
   };
 
   const handleTotalSubjectsChange = (e) => {
@@ -276,7 +277,7 @@ export default function TableInputForm() {
   };
 
   const nullHandlerError = (e) => {
-    if (workingDays <= 0 || subjectPerDay <= 0 || totalSubjects <= 0) {
+    if (workingDays <= 0 || subjectsPerDay <= 0 || totalSubjects <= 0) {
       alert("Please fill all the required fields");
       return;
     }
@@ -291,34 +292,79 @@ export default function TableInputForm() {
 
     var apiPostData = {
       workingDays: workingDays,
-      subjectsPerDay: subjectPerDay,
+      subjectsPerDay: subjectsPerDay,
       totalSubjects: totalSubjects,
       subjectAndHrs: dataObj,
     };
 
     console.log(apiPostData);
-    fetch("https://localhost:44390/api/GenerateTimetable", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(apiPostData),
-    })
-      .then((response) => {
+  //   fetch("https://localhost:44390/api/GenerateTimetable", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(apiPostData),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error("Network response was not ok");
+  //       }
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       // Handle the response data here
+  //       console.log(data);
+  //     })
+  //     .catch((error) => {
+  //       // Handle any errors here
+  //       console.error("There was a problem with the fetch operation:", error);
+  //     });
+  // };
+
+  
+    // Define a function to make the API call
+    const fetchTimeTable = async () => {
+      try {
+        const apiUrl = "https://localhost:44390/api/GenerateTimetable" ; 
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ apiPostData })
+        });
+
+        const data = await response.json();
+        setResponse(data); // Update the state with the response data
+        
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.json();
-      })
-      .then((data) => {
-        // Handle the response data here
-        console.log(data);
-      })
-      .catch((error) => {
-        // Handle any errors here
-        console.error("There was a problem with the fetch operation:", error);
-      });
-  };
+
+        
+      } catch (error) {
+        console.error('Error:', error);
+        // Handle errors, e.g., show an error message to the user
+      }
+    };  
+
+    // Call the API function when the component mounts
+    fetchTimeTable();
+  // Empty dependency array to run the effect once when the component mounts
+
+  return (
+    <div>
+      {response ? (
+        <div>
+          <h2>Response:</h2>
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+  }
 
   const getData = () => {
     // const dataList = [];
@@ -439,7 +485,7 @@ export default function TableInputForm() {
             </tr>
             <tr>
               <td>
-                <label htmlFor="noOfSubjectPerDay">
+                <label htmlFor="noOfSubjectsPerDay">
                   Enter the number of subjects per day:
                 </label>
               </td>
@@ -447,9 +493,9 @@ export default function TableInputForm() {
                 <input
                   required
                   type="number"
-                  id="noOfSubjectPerDay"
-                  name="noOfSubjectPerDay"
-                  value={subjectPerDay}
+                  id="noOfSubjectsPerDay"
+                  name="noOfSubjectsPerDay"
+                  value={subjectsPerDay}
                   onChange={handleSubjectPerDayChange}
                 />
               </td>
